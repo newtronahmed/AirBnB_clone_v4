@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-""" The API index """
+""" Index """
 from models.amenity import Amenity
 from models.city import City
 from models.place import Place
@@ -8,44 +8,23 @@ from models.state import State
 from models.user import User
 from models import storage
 from api.v1.views import app_views
-from models import storage
 from flask import jsonify
 
 
-@app_views.route('/status')
+@app_views.route('/status', methods=['GET'], strict_slashes=False)
 def status():
-    """
-    Returns json response as the status
-
-    Returns:
-        JSON: json object
-    """
-    status = {
-        "status": "OK"
-    }
-    return jsonify(status)
+    """ Status of API """
+    return jsonify({"status": "OK"})
 
 
-@app_views.route('/stats', strict_slashes=False)
-def count():
-    """
-    returns a count of all database objects
-    """
+@app_views.route('/stats', methods=['GET'], strict_slashes=False)
+def number_objects():
+    """ Retrieves the number of each objects by type """
+    classes = [Amenity, City, Place, Review, State, User]
+    names = ["amenities", "cities", "places", "reviews", "states", "users"]
 
-    models_list= {
-        "User": "users",
-        "Amenity": "amenities",
-        "City": "cities",
-        "Place": "places",
-        "Review": "reviews",
-        "State": "states",
-    }
-    mod_objs = [Amenity, City, Place, Review, State, User]
+    num_objs = {}
+    for i in range(len(classes)):
+        num_objs[names[i]] = storage.count(classes[i])
 
-    count = {}
-    i = -1
-    for cls in models_list.keys():
-        i += 1
-        count[models_list[cls]] = storage.count(mod_objs[i])
-
-    return jsonify(count)
+    return jsonify(num_objs)
